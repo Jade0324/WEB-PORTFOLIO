@@ -414,6 +414,39 @@
       <footer class="footer fade-in">
         <p>&copy; 2026 John David Romero. All rights reserved.</p>
       </footer>
+
+      <div class="chat-container fade-in">
+        <div class="chat-window" id="chat-window">
+          <div class="chat-header">
+            <h4><i class="fa-solid fa-robot"></i> John's AI Assistant</h4>
+            <button id="close-chat" class="close-btn">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="chat-messages" id="chat-messages">
+            <div class="message ai-message">
+              Hi! I'm John's AI assistant. Ask me anything about his skills,
+              experience, or projects!
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <input
+              type="text"
+              id="chat-input"
+              placeholder="Type your message..."
+            />
+            <button id="send-chat" class="send-btn">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <button class="chat-toggle-btn" id="chat-toggle-btn">
+          <i class="fa-regular fa-comment-dots"></i> Chat with John
+        </button>
+      </div>
     </div>
 
     <script src="script.js"></script>
