@@ -2,9 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // === 1. THEME TOGGLE ===
     const themeBtn = document.getElementById('theme-toggle');
     const body = document.body;
-    themeBtn.addEventListener('click', () => {
-        body.classList.toggle('dark-mode');
-    });
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+        });
+    }
 
     // === 2. BANNER POPUP ===
     const bannerWrapper = document.getElementById('banner-wrapper');
@@ -45,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatToggleBtn.addEventListener('click', () => {
             chatWindow.classList.add('active');
         });
-
         closeChatBtn.addEventListener('click', () => {
             chatWindow.classList.remove('active');
         });
@@ -63,13 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const userText = chatInput.value.trim();
         if (!userText) return;
 
-        // Clear input field
         chatInput.value = '';
-
-        // Append User's Message
         appendMessage(userText, 'user-message');
 
-        // Append a "Typing..." indicator
         const typingIndicator = document.createElement('div');
         typingIndicator.className = 'typing-indicator';
         typingIndicator.textContent = 'AI is typing...';
@@ -77,43 +74,42 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         try {
-            // Talk to the Vercel backend file you created (api/chat.js)
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userText }) 
             });
 
-            const data = await response.json();
-            
-            // Remove typing indicator
+            // Get raw text first to prevent JSON crashing
+            const rawText = await response.text();
             chatMessages.removeChild(typingIndicator);
 
-            // Display AI response
-            if (data.candidates && data.candidates.length > 0) {
-                const aiText = data.candidates[0].content.parts[0].text;
-                appendMessage(aiText, 'ai-message');
-            } else {
-                console.error("Backend response format:", data);
-                appendMessage("Sorry, I couldn't process that. Try again.", 'ai-message');
+            try {
+                const data = JSON.parse(rawText);
+                
+                if (data.candidates && data.candidates.length > 0) {
+                    appendMessage(data.candidates[0].content.parts[0].text, 'ai-message');
+                } else if (data.error) {
+                    // THIS PRINTS THE EXACT ERROR TO THE CHAT
+                    const errorMsg = typeof data.error === 'string' ? data.error : data.error.message;
+                    appendMessage("⚠️ Error: " + errorMsg, 'ai-message');
+                } else {
+                    appendMessage("⚠️ Unknown Response: " + rawText, 'ai-message');
+                }
+            } catch (parseError) {
+                appendMessage("⚠️ Server crashed. Vercel returned: " + rawText.substring(0, 60), 'ai-message');
             }
 
         } catch (error) {
-            console.error("Frontend Error:", error);
             chatMessages.removeChild(typingIndicator);
-            appendMessage("Network error. Chat only works when hosted on Vercel.", 'ai-message');
+            appendMessage("⚠️ Network error. Make sure you are testing on your live Vercel link.", 'ai-message');
         }
     }
 
     function appendMessage(text, className) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message ${className}`;
-        
-        // Simple markdown parsing for bold text
         msgDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
         chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
