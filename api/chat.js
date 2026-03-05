@@ -1,19 +1,18 @@
-module.exports = async function(req, res) {
-    // Only allow POST requests
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const userMessage = req.body.message;
+    const userMessage = req.body.message || "Hello";
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Check if Vercel successfully loaded the API key
     if (!apiKey) {
-        return res.status(200).json({ error: 'Vercel cannot find the API key. Please check your Environment Variables and redeploy.' });
+        return res.status(400).json({ error: 'Vercel cannot find the API key. Ensure it is saved in Environment Variables and you clicked Redeploy.' });
     }
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        // Changed model to gemini-1.5-flash-latest
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -32,7 +31,6 @@ module.exports = async function(req, res) {
         return res.status(200).json(data);
 
     } catch (error) {
-        console.error("Backend Error:", error);
-        return res.status(200).json({ error: 'Failed to reach Google servers: ' + error.message });
+        return res.status(500).json({ error: 'Failed to reach Google servers: ' + error.message });
     }
-};
+}
