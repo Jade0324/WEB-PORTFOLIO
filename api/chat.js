@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Changed model to the universally supported 'gemini-pro'
+        // Changed the model to the universal 'gemini-pro'
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
